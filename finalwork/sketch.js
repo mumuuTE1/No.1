@@ -11,7 +11,7 @@ function draw(){
     ellipse(100,100,20)
     ellipse(200,100,20)
     ellipse(500, 500, 20)
-    ellipse(1500,850,20)
+    ellipse(1300,750,50)
 }
 
 function windowResized(){
