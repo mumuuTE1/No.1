@@ -2,6 +2,7 @@
 let x, y;
 let vx, vy;
 const g = 1;
+let m = 5
 
 function setup(){
   createCanvas(windowWidth, windowHeight);
@@ -25,10 +26,17 @@ function draw(){
   rect(0, groundY, width, height - groundY);
 
   // BLANK[1] キャラクターの左右移動
-
+  
+if (keyIsDown(" ".charAt(0))){ m = 10}   
+if (keyIsDown(LEFT_ARROW)){ x -= m;}
+if (keyIsDown(RIGHT_ARROW)){ x += m;}
+else (m = 5)
+ 
+console.log("m=" + m);
   // BLANK[2] 重力とジャンプ
 
   // 速くなりすぎないように制限
+  
   vx = constrain(vx, -20, 20);
   vy = constrain(vy, -20, 20);
 
@@ -38,5 +46,6 @@ function draw(){
 
   // キャラクターを描く
   fill(0);
-  ellipse(x, y, size, size);
+  ellipse(x, y, size
+  );
 }

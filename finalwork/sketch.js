@@ -2,10 +2,13 @@
 
 function setup(){
   createCanvas(windowWidth, windowHeight);
+   
 }
 
 function draw(){
   background(160, 192, 255);
+  fill(255);
+    ellipse(100,100,20)
 }
 
 function windowResized(){
