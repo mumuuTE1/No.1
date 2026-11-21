@@ -1,711 +1,214 @@
-// 最終課題を制作しよう
-
 
 let player;
 let guards = [];
 let plants = [];
+let treasure, goal;
 
-let treasure;
-let goal;
-let wall;
-
-let gameState = "start";
-
-let startTime;
-let timeLimit = 30;
-
-let guardSpeed = 0.0015;
-let playerSpeed = 0.004;
-
-let guardCount = 3;
-
-// 画面サイズに依存する基本単位
-function unit() {
-  return min(width, height);
-}
+let state = "start";
+let moving = false;
+let escapeStart, nextAdd = 3000;
+let cellW, cellH;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  cellW = width / 18;
+  cellH = height / 18;
 
-  initializeGame();
-}
+  player = { x: width - cellW / 2, y: height - cellH / 2 };
+  treasure = { x: cellW / 2, y: cellH / 2 };
+  goal = { x: width - cellW / 2, y: height - cellH / 2 };
 
-function initializeGame() {
-
-  // プレイヤー
-  player = {
-    x: 0.04,
-    y: 0.5,
-    r: 0.014,
-    moving: false
-  };
-
-  // 宝
-  treasure = {
-    x: 0.5,
-    y: 0.5,
-    r: 0.025
-  };
-
-  // ゴール
-  goal = {
-    x: 0.94,
-    y: 0.9,
-    r: 0.035
-  };
-
-  // 壁（右端から画面中央方向へ）
-  wall = {
-    x1: 0.5,
-    x2: 1.0,
-    y: 0.72,
-    thickness: 0.025
-  };
-
-  // 植物を3か所に設置
   plants = [
-    { x: 0.25, y: 0.25 },
-    { x: 0.75, y: 0.25 },
-    { x: 0.25, y: 0.75 }
+    { x: cellW * 4.5, y: cellH * 4.5 },
+    { x: cellW * 13.5, y: cellH * 4.5 },
+    { x: cellW * 4.5, y: cellH * 13.5 },
+    { x: cellW * 13.5, y: cellH * 13.5 }
   ];
-
-  guards = [];
-
-  guardSpeed = 0.0015;
-  guardCount = 3;
-
-  // 警備員を配置
-  for (let i = 0; i < guardCount; i++) {
-    addGuard();
-  }
 }
 
 function addGuard() {
-
-  let g = {
-    x: random(0.2, 0.85),
-    y: random(0.15, 0.85),
-
-    angle: random(TWO_PI),
-
-    lastTurn: millis(),
-
-    speed: guardSpeed
-  };
-
-  guards.push(g);
+  guards.push({
+    x: random(width * 0.2, width * 0.8),
+    y: random(height * 0.1, height * 0.6),
+    dir: random(360),
+    time: millis(),
+    hitTime: 0
+  });
 }
-
-// ----------------------------------
-// draw
-// ----------------------------------
 
 function draw() {
+  background(255);
+  cellW = width / 18;
+  cellH = height / 18;
 
-  background(160, 192, 255);
-
-  if (gameState === "start") {
-    drawStartScreen();
+  // マス目
+  stroke(180);
+  for (let i = 1; i < 18; i++) {
+    line(cellW * i, 0, cellW * i, height);
+    line(0, cellH * i, width, cellH * i);
   }
-
-  else if (gameState === "playing") {
-    playGame();
-  }
-
-  else if (gameState === "escape") {
-    escapeGame();
-  }
-
-  else if (gameState === "clear") {
-    drawResult("GAME CLEAR!", "宝を盗み、無事に脱出した！");
-  }
-
-  else if (gameState === "over") {
-    drawResult("GAME OVER", "警備員に見つかった、または時間切れ！");
-  }
-}
-
-// ----------------------------------
-// ゲーム画面
-// ----------------------------------
-
-function drawWorld() {
-
-  // 植物
-  for (let p of plants) {
-    drawPlant(p);
-  }
-
-  // 壁
-  fill(75, 75, 85);
   noStroke();
 
-  rect(
-    wall.x1 * width,
-    wall.y * height - wall.thickness * unit() / 2,
-    (wall.x2 - wall.x1) * width,
-    wall.thickness * unit()
-  );
+  // 植物とEXIT
+  fill(30, 150, 50);
+  for (let p of plants) rect(p.x - cellW / 2, p.y - cellH / 2, cellW, cellH);
+  rect(width - cellW, height - cellH, cellW, cellH);
 
-  // 宝
-  drawTreasure();
-
-  // ゴール
-  drawGoal();
-
-  // 警備員のライト
-  for (let g of guards) {
-    drawLight(g);
-  }
-
-  // 警備員
-  for (let g of guards) {
-    drawGuard(g);
-  }
-
-  // プレイヤー
-  drawPlayer();
-}
-
-// ----------------------------------
-// 植物
-// ----------------------------------
-
-function drawPlant(p) {
-
-  let x = p.x * width;
-  let y = p.y * height;
-  let s = unit();
-
-  noStroke();
-
-  fill(30, 130, 55);
-
-  ellipse(x - s * 0.012, y, s * 0.035, s * 0.018);
-  ellipse(x + s * 0.012, y, s * 0.035, s * 0.018);
-
-  fill(20, 100, 40);
-  rect(x - s * 0.004, y, s * 0.008, s * 0.025);
-}
-
-// ----------------------------------
-// 宝
-// ----------------------------------
-
-function drawTreasure() {
-
-  let x = treasure.x * width;
-  let y = treasure.y * height;
-  let s = unit();
-
-  fill(255, 210, 40);
-  stroke(150, 100, 0);
-  strokeWeight(2);
-
-  rectMode(CENTER);
-  rect(x, y, s * 0.045, s * 0.035);
-
-  fill(255);
-  noStroke();
+  fill(0);
   textAlign(CENTER, CENTER);
-  textSize(s * 0.025);
-  text("★", x, y);
-}
+  textSize(14);
+  text("EXIT", goal.x, goal.y);
 
-// ----------------------------------
-// ゴール
-// ----------------------------------
-
-function drawGoal() {
-
-  let x = goal.x * width;
-  let y = goal.y * height;
-  let s = unit();
-
-  fill(30, 180, 100);
-  stroke(255);
-  strokeWeight(3);
-
-  rectMode(CENTER);
-  rect(x, y, s * 0.07, s * 0.07);
-
-  noStroke();
-  fill(255);
-  textAlign(CENTER, CENTER);
-  textSize(s * 0.018);
-  text("GOAL", x, y);
-}
-
-// ----------------------------------
-// 警備員のライト
-// ----------------------------------
-
-function drawLight(g) {
-
-  let x = g.x * width;
-  let y = g.y * height;
-
-  let s = unit();
-
-  push();
-
-  translate(x, y);
-  rotate(g.angle);
-
-  noStroke();
-  fill(255, 255, 100, 65);
-
-  // 前方に伸びる長方形のライト
-  rectMode(CORNER);
-
-  rect(
-    s * 0.018,
-    -s * 0.045,
-    s * 0.20,
-    s * 0.09
-  );
-
-  pop();
-}
-
-// ----------------------------------
-// 警備員
-// ----------------------------------
-
-function drawGuard(g) {
-
-  let x = g.x * width;
-  let y = g.y * height;
-  let s = unit();
-
-  push();
-
-  translate(x, y);
-  rotate(g.angle);
-
-  noStroke();
-
-  fill(190, 40, 40);
-  rectMode(CENTER);
-  rect(0, 0, s * 0.035, s * 0.025);
-
-  // 向きを示すライト部分
-  fill(255, 240, 100);
-  ellipse(s * 0.018, 0, s * 0.012);
-
-  pop();
-}
-
-// ----------------------------------
-// プレイヤー
-// ----------------------------------
-
-function drawPlayer() {
-
-  let x = player.x * width;
-  let y = player.y * height;
-  let s = unit();
-
-  noStroke();
-
-  if (player.moving) {
-    fill(30, 30, 30);
-  } else {
-    // 停止中は植物に擬態
-    fill(20, 130, 45);
+  // スタート画面
+  if (state == "start") {
+    fill(0);
+    textSize(30);
+    text("THIEF GAME", width / 2, height * 0.4);
+    textSize(18);
+    text("Press ENTER to start", width / 2, height * 0.5);
+    return;
   }
 
-  rectMode(CENTER);
-  rect(x, y, s * 0.025, s * 0.025);
-}
+  if (state == "play" || state == "escape") {
+    // プレイヤーの移動
+    moving = false;
+    if (keyIsDown(LEFT_ARROW)) { player.x -= 3; moving = true; }
+    if (keyIsDown(RIGHT_ARROW)) { player.x += 3; moving = true; }
+    if (keyIsDown(UP_ARROW)) { player.y -= 3; moving = true; }
+    if (keyIsDown(DOWN_ARROW)) { player.y += 3; moving = true; }
 
-// ----------------------------------
-// プレイヤー移動
-// ----------------------------------
+    player.x = constrain(player.x, 0, width);
+    player.y = constrain(player.y, 0, height);
 
-function movePlayer() {
+    // 警備員
+    for (let g of guards) {
+      if (millis() - g.time > 2000) {
+        g.dir = random(360);
+        g.time = millis();
+      }
 
-  let dx = 0;
-  let dy = 0;
+      let speed = state == "escape" ? 3 : 1.5;
+      g.x += cos(radians(g.dir)) * speed;
+      g.y += sin(radians(g.dir)) * speed;
 
-  if (keyIsDown(LEFT_ARROW) || keyIsDown(65)) {
-    dx--;
-  }
+      // 画面端
+      if (g.x < 10 || g.x > width - 10 || g.y < 10 || g.y > height - 10) {
+        g.x = constrain(g.x, 10, width - 10);
+        g.y = constrain(g.y, 10, height - 10);
+        g.dir = random(360);
+      }
 
-  if (keyIsDown(RIGHT_ARROW) || keyIsDown(68)) {
-    dx++;
-  }
+      // プレイヤーとの衝突
+      if (dist(g.x, g.y, player.x, player.y) < 20 && millis() - g.hitTime > 500) {
+        g.dir = random(360);
+        g.hitTime = millis();
+      }
 
-  if (keyIsDown(UP_ARROW) || keyIsDown(87)) {
-    dy--;
-  }
+      // ライト
+      push();
+      translate(g.x, g.y);
+      rotate(radians(g.dir));
+      fill(255, 220, 0, 70);
+      rect(0, -15, 100, 30);
+      pop();
 
-  if (keyIsDown(DOWN_ARROW) || keyIsDown(83)) {
-    dy++;
-  }
+      // ライトに照らされたか
+      if (moving) {
+        let dx = player.x - g.x;
+        let dy = player.y - g.y;
+        let angle = radians(g.dir);
+        let localX = dx * cos(angle) + dy * sin(angle);
+        let localY = -dx * sin(angle) + dy * cos(angle);
 
-  player.moving = dx !== 0 || dy !== 0;
+        if (localX > 0 && localX < 100 && abs(localY) < 15) state = "over";
+      }
 
-  if (player.moving) {
-
-    // 斜め移動の速度を調整
-    let mag = sqrt(dx * dx + dy * dy);
-
-    dx /= mag;
-    dy /= mag;
-
-    let oldX = player.x;
-    let oldY = player.y;
-
-    player.x += dx * playerSpeed;
-    player.y += dy * playerSpeed;
-
-    // 画面外に出ないようにする
-    player.x = constrain(player.x, 0.015, 0.985);
-    player.y = constrain(player.y, 0.015, 0.985);
-
-    // 壁との衝突
-    if (playerHitsWall()) {
-      player.x = oldX;
-      player.y = oldY;
-    }
-  }
-}
-
-// ----------------------------------
-// 壁との衝突判定
-// ----------------------------------
-
-function playerHitsWall() {
-
-  let px = player.x * width;
-  let py = player.y * height;
-
-  let s = unit();
-
-  let left = wall.x1 * width;
-  let right = wall.x2 * width;
-
-  let wy = wall.y * height;
-  let thick = wall.thickness * s;
-
-  return (
-    px + player.r * s > left &&
-    px - player.r * s < right &&
-    py + player.r * s > wy - thick / 2 &&
-    py - player.r * s < wy + thick / 2
-  );
-}
-
-// ----------------------------------
-// 警備員の移動
-// ----------------------------------
-
-function updateGuards() {
-
-  for (let g of guards) {
-
-    let oldX = g.x;
-    let oldY = g.y;
-
-    // 2秒ごとに方向転換
-    if (millis() - g.lastTurn > 2000) {
-      turnGuard(g);
+      // 警備員の姿
+      fill(30, 80, 180);
+      rect(g.x - 10, g.y - 10, 20, 20);
+      fill(0);
+      ellipse(g.x, g.y, 10, 10);
     }
 
-    g.x += cos(g.angle) * g.speed;
-    g.y += sin(g.angle) * g.speed;
+    // 警備員同士の衝突
+    for (let i = 0; i < guards.length; i++) {
+      for (let j = i + 1; j < guards.length; j++) {
+        let a = guards[i], b = guards[j];
 
-    // 画面端に当たった場合
-    if (
-      g.x < 0.02 || g.x > 0.98 ||
-      g.y < 0.02 || g.y > 0.98
-    ) {
-      g.x = oldX;
-      g.y = oldY;
-      turnGuard(g);
+        if (dist(a.x, a.y, b.x, b.y) < 20 &&
+            millis() - a.hitTime > 500 && millis() - b.hitTime > 500) {
+          a.dir = random(360);
+          b.dir = random(360);
+          a.hitTime = millis();
+          b.hitTime = millis();
+        }
+      }
     }
 
-    // 壁に当たった場合
-    if (guardHitsWall(g)) {
-      g.x = oldX;
-      g.y = oldY;
-      turnGuard(g);
+    // 宝
+    if (state == "play") {
+      fill(255, 190, 0);
+      quad(treasure.x, treasure.y - 15, treasure.x + 12, treasure.y,
+           treasure.x, treasure.y + 15, treasure.x - 12, treasure.y);
+
+      if (dist(player.x, player.y, treasure.x, treasure.y) < 25) {
+        state = "escape";
+        escapeStart = millis();
+      }
     }
 
-    // プレイヤーに当たった場合
-    let d = dist(
-      g.x * width,
-      g.y * height,
-      player.x * width,
-      player.y * height
-    );
+    // 脱出
+    if (state == "escape") {
+      let elapsed = millis() - escapeStart;
 
-    if (d < unit() * 0.04) {
-      turnGuard(g);
+      if (elapsed >= nextAdd) {
+        addGuard();
+        addGuard();
+        nextAdd += 3000;
+      }
+
+      if (elapsed > 30000) state = "over";
+
+      fill(0);
+      textSize(18);
+      text("ESCAPE!", width / 2, 30);
+      text("TIME: " + floor((30000 - elapsed) / 1000), width / 2, 55);
+
+      if (player.x >= width - cellW && player.y >= height - cellH) state = "clear";
     }
-  }
-}
 
-function turnGuard(g) {
-
-  g.angle = random(TWO_PI);
-  g.lastTurn = millis();
-}
-
-// ----------------------------------
-// 警備員と壁の衝突
-// ----------------------------------
-
-function guardHitsWall(g) {
-
-  let gx = g.x * width;
-  let gy = g.y * height;
-
-  let left = wall.x1 * width;
-  let right = wall.x2 * width;
-
-  let wy = wall.y * height;
-
-  return (
-    gx > left &&
-    gx < right &&
-    abs(gy - wy) < wall.thickness * unit() / 2
-  );
-}
-
-// ----------------------------------
-// ライトの範囲内にいるか
-// ----------------------------------
-
-function isInLight(g) {
-
-  let dx = (player.x - g.x) * width;
-  let dy = (player.y - g.y) * height;
-
-  let forward = dx * cos(g.angle) + dy * sin(g.angle);
-
-  let side = -dx * sin(g.angle) + dy * cos(g.angle);
-
-  let s = unit();
-
-  return (
-    forward > 0 &&
-    forward < s * 0.20 &&
-    abs(side) < s * 0.045
-  );
-}
-
-// ----------------------------------
-// ゲーム進行
-// ----------------------------------
-
-function playGame() {
-
-  movePlayer();
-  updateGuards();
-
-  drawWorld();
-
-  // ライトに照らされて動いたら発見
-  for (let g of guards) {
-
-    if (isInLight(g) && player.moving) {
-      gameState = "over";
-    }
+    // プレイヤーの姿
+    fill(moving ? 0 : color(30, 150, 50));
+    if (moving) ellipse(player.x, player.y, 18, 18);
+    else rect(player.x - cellW / 2, player.y - cellH / 2, cellW, cellH);
   }
 
-  // 宝を取得
-  if (
-    dist(
-      player.x * width,
-      player.y * height,
-      treasure.x * width,
-      treasure.y * height
-    ) < unit() * 0.04
-  ) {
-    startEscape();
-  }
-
-  drawHUD();
-}
-
-// ----------------------------------
-// 宝を取った後
-// ----------------------------------
-
-function startEscape() {
-
-  gameState = "escape";
-
-  // 警備員を2人追加
-  addGuard();
-  addGuard();
-
-  // 移動速度を上げる
-  guardSpeed *= 1.5;
-
-  for (let g of guards) {
-    g.speed = guardSpeed;
-  }
-
-  startTime = millis();
-}
-
-// ----------------------------------
-// 脱出フェーズ
-// ----------------------------------
-
-function escapeGame() {
-
-  movePlayer();
-  updateGuards();
-
-  drawWorld();
-
-  // ライトに照らされて動いたら発見
-  for (let g of guards) {
-
-    if (isInLight(g) && player.moving) {
-      gameState = "over";
-    }
-  }
-
-  // ゴール判定
-  let d = dist(
-    player.x * width,
-    player.y * height,
-    goal.x * width,
-    goal.y * height
-  );
-
-  if (d < unit() * 0.055) {
-    gameState = "clear";
-  }
-
-  // 残り時間
-  let remaining = timeLimit - (millis() - startTime) / 1000;
-
-  if (remaining <= 0) {
-    gameState = "over";
-  }
-
-  drawHUD(remaining);
-}
-
-// ----------------------------------
-// HUD
-// ----------------------------------
-
-function drawHUD(remaining) {
-
-  fill(30);
-  noStroke();
-
-  textAlign(LEFT, TOP);
-  textSize(unit() * 0.022);
-
-  if (gameState === "playing") {
-    text("TREASURE: STEAL IT!", 20, 20);
-  }
-
-  if (gameState === "escape") {
-    text("ESCAPE TIME: " + max(0, ceil(remaining)), 20, 20);
-    text("GUARDS: " + guards.length, 20, 50);
+  // 結果表示
+  if (state == "clear" || state == "over") {
+    fill(0);
+    textSize(32);
+    text(state == "clear" ? "CLEAR!" : "GAME OVER", width / 2, height / 2);
+    textSize(18);
+    text("Press ENTER to restart", width / 2, height / 2 + 50);
   }
 }
-
-// ----------------------------------
-// スタート画面
-// ----------------------------------
-
-function drawStartScreen() {
-
-  fill(30);
-  textAlign(CENTER, CENTER);
-
-  textSize(unit() * 0.055);
-  text("THE GREAT THIEF", width / 2, height * 0.32);
-
-  textSize(unit() * 0.022);
-
-  text(
-    "警備員のライトを避けて、中央の宝を盗み出せ！",
-    width / 2,
-    height * 0.44
-  );
-
-  text(
-    "光の中でも、止まっていれば植物に擬態できる。",
-    width / 2,
-    height * 0.49
-  );
-
-  text(
-    "宝を盗んだら、右下のゴールへ急げ！",
-    width / 2,
-    height * 0.54
-  );
-
-  text(
-    "操作：WASD / 矢印キー",
-    width / 2,
-    height * 0.62
-  );
-
-  text(
-    "ENTER でスタート",
-    width / 2,
-    height * 0.72
-  );
-}
-
-// ----------------------------------
-// 結果画面
-// ----------------------------------
-
-function drawResult(title, message) {
-
-  fill(30);
-  textAlign(CENTER, CENTER);
-
-  textSize(unit() * 0.06);
-  text(title, width / 2, height * 0.4);
-
-  textSize(unit() * 0.025);
-  text(message, width / 2, height * 0.52);
-
-  textSize(unit() * 0.02);
-  text("ENTER で再スタート", width / 2, height * 0.65);
-}
-
-// ----------------------------------
-// キー入力
-// ----------------------------------
 
 function keyPressed() {
+  if (key === "Enter" && (state == "start" || state == "clear" || state == "over")) {
+    guards = [];
+    for (let i = 0; i < 5; i++) addGuard();
 
-  if (keyCode === ENTER) {
-
-    if (gameState === "start") {
-      gameState = "playing";
-    }
-
-    else if (gameState === "clear" || gameState === "over") {
-      initializeGame();
-      gameState = "playing";
-    }
+    player.x = width - cellW / 2;
+    player.y = height - cellH / 2;
+    nextAdd = 3000;
+    state = "play";
   }
-
-  return false;
 }
-
-// ----------------------------------
-// 画面サイズ変更
-// ----------------------------------
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
+  cellW = width / 18;
+  cellH = height / 18;
+  goal.x = width - cellW / 2;
+  goal.y = height - cellH / 2;
 }
-
-
