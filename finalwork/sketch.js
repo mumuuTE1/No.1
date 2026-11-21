@@ -12,17 +12,17 @@ let cellW, cellH;
 function setup() {
   createCanvas(windowWidth, windowHeight);
   cellW = width / 18;
-  cellH = height / 18;
+  cellH = height / 27;
 
   player = { x: width - cellW / 2, y: height - cellH / 2 };
   treasure = { x: cellW / 2, y: cellH / 2 };
   goal = { x: width - cellW / 2, y: height - cellH / 2 };
 
   plants = [
-    { x: cellW * 4.5, y: cellH * 4.5 },
-    { x: cellW * 13.5, y: cellH * 4.5 },
-    { x: cellW * 4.5, y: cellH * 13.5 },
-    { x: cellW * 13.5, y: cellH * 13.5 }
+    { x: cellW * 4.5, y: cellH * 6.75 },
+    { x: cellW * 13.5, y: cellH * 6.75 },
+    { x: cellW * 4.5, y: cellH * 20.25 },
+    { x: cellW * 13.5, y: cellH * 20.25 }
   ];
 }
 
@@ -39,14 +39,12 @@ function addGuard() {
 function draw() {
   background(255);
   cellW = width / 18;
-  cellH = height / 18;
+  cellH = height / 27;
 
   // マス目
   stroke(180);
-  for (let i = 1; i < 18; i++) {
-    line(cellW * i, 0, cellW * i, height);
-    line(0, cellH * i, width, cellH * i);
-  }
+  for (let i = 1; i < 18; i++) line(cellW * i, 0, cellW * i, height);
+  for (let i = 1; i < 27; i++) line(0, cellH * i, width, cellH * i);
   noStroke();
 
   // 植物とEXIT
@@ -92,14 +90,14 @@ function draw() {
       g.y += sin(radians(g.dir)) * speed;
 
       // 画面端
-      if (g.x < 10 || g.x > width - 10 || g.y < 10 || g.y > height - 10) {
-        g.x = constrain(g.x, 10, width - 10);
-        g.y = constrain(g.y, 10, height - 10);
+      if (g.x < 20 || g.x > width - 20 || g.y < 20 || g.y > height - 20) {
+        g.x = constrain(g.x, 20, width - 20);
+        g.y = constrain(g.y, 20, height - 20);
         g.dir = random(360);
       }
 
       // プレイヤーとの衝突
-      if (dist(g.x, g.y, player.x, player.y) < 20 && millis() - g.hitTime > 500) {
+      if (dist(g.x, g.y, player.x, player.y) < 30 && millis() - g.hitTime > 500) {
         g.dir = random(360);
         g.hitTime = millis();
       }
@@ -109,7 +107,7 @@ function draw() {
       translate(g.x, g.y);
       rotate(radians(g.dir));
       fill(255, 220, 0, 70);
-      rect(0, -15, 100, 30);
+      rect(0, -30, 200, 60);
       pop();
 
       // ライトに照らされたか
@@ -120,14 +118,14 @@ function draw() {
         let localX = dx * cos(angle) + dy * sin(angle);
         let localY = -dx * sin(angle) + dy * cos(angle);
 
-        if (localX > 0 && localX < 100 && abs(localY) < 15) state = "over";
+        if (localX > 0 && localX < 200 && abs(localY) < 30) state = "over";
       }
 
       // 警備員の姿
       fill(30, 80, 180);
-      rect(g.x - 10, g.y - 10, 20, 20);
+      rect(g.x - 20, g.y - 20, 40, 40);
       fill(0);
-      ellipse(g.x, g.y, 10, 10);
+      ellipse(g.x, g.y, 20, 20);
     }
 
     // 警備員同士の衝突
@@ -135,7 +133,7 @@ function draw() {
       for (let j = i + 1; j < guards.length; j++) {
         let a = guards[i], b = guards[j];
 
-        if (dist(a.x, a.y, b.x, b.y) < 20 &&
+        if (dist(a.x, a.y, b.x, b.y) < 40 &&
             millis() - a.hitTime > 500 && millis() - b.hitTime > 500) {
           a.dir = random(360);
           b.dir = random(360);
@@ -179,7 +177,7 @@ function draw() {
 
     // プレイヤーの姿
     fill(moving ? 0 : color(30, 150, 50));
-    if (moving) ellipse(player.x, player.y, 18, 18);
+    if (moving) ellipse(player.x, player.y, 36, 36);
     else rect(player.x - cellW / 2, player.y - cellH / 2, cellW, cellH);
   }
 
@@ -208,7 +206,7 @@ function keyPressed() {
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
   cellW = width / 18;
-  cellH = height / 18;
+  cellH = height / 27;
   goal.x = width - cellW / 2;
   goal.y = height - cellH / 2;
 }
