@@ -11,18 +11,18 @@ let cellW, cellH;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  cellW = width / 18;
-  cellH = height / 27;
+  cellW = width / 27;
+  cellH = height / 18;
 
   player = { x: width - cellW / 2, y: height - cellH / 2 };
   treasure = { x: cellW / 2, y: cellH / 2 };
   goal = { x: width - cellW / 2, y: height - cellH / 2 };
 
   plants = [
-    { x: cellW * 4.5, y: cellH * 6.75 },
-    { x: cellW * 13.5, y: cellH * 6.75 },
-    { x: cellW * 4.5, y: cellH * 20.25 },
-    { x: cellW * 13.5, y: cellH * 20.25 }
+    { x: cellW * 6.75, y: cellH * 4.5 },
+    { x: cellW * 20.25, y: cellH * 4.5 },
+    { x: cellW * 6.75, y: cellH * 13.5 },
+    { x: cellW * 20.25, y: cellH * 13.5 }
   ];
 }
 
@@ -38,13 +38,13 @@ function addGuard() {
 
 function draw() {
   background(255);
-  cellW = width / 18;
-  cellH = height / 27;
+  cellW = width / 27;
+  cellH = height / 18;
 
   // マス目
   stroke(180);
-  for (let i = 1; i < 18; i++) line(cellW * i, 0, cellW * i, height);
-  for (let i = 1; i < 27; i++) line(0, cellH * i, width, cellH * i);
+  for (let i = 1; i < 27; i++) line(cellW * i, 0, cellW * i, height);
+  for (let i = 1; i < 18; i++) line(0, cellH * i, width, cellH * i);
   noStroke();
 
   // 植物とEXIT
@@ -68,12 +68,12 @@ function draw() {
   }
 
   if (state == "play" || state == "escape") {
-    // プレイヤーの移動
+    // プレイヤーの移動（速度2倍）
     moving = false;
-    if (keyIsDown(LEFT_ARROW)) { player.x -= 3; moving = true; }
-    if (keyIsDown(RIGHT_ARROW)) { player.x += 3; moving = true; }
-    if (keyIsDown(UP_ARROW)) { player.y -= 3; moving = true; }
-    if (keyIsDown(DOWN_ARROW)) { player.y += 3; moving = true; }
+    if (keyIsDown(LEFT_ARROW)) { player.x -= 6; moving = true; }
+    if (keyIsDown(RIGHT_ARROW)) { player.x += 6; moving = true; }
+    if (keyIsDown(UP_ARROW)) { player.y -= 6; moving = true; }
+    if (keyIsDown(DOWN_ARROW)) { player.y += 6; moving = true; }
 
     player.x = constrain(player.x, 0, width);
     player.y = constrain(player.y, 0, height);
@@ -85,7 +85,8 @@ function draw() {
         g.time = millis();
       }
 
-      let speed = state == "escape" ? 3 : 1.5;
+      // 警備員の速度2倍
+      let speed = state == "escape" ? 6 : 3;
       g.x += cos(radians(g.dir)) * speed;
       g.y += sin(radians(g.dir)) * speed;
 
@@ -205,8 +206,8 @@ function keyPressed() {
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
-  cellW = width / 18;
-  cellH = height / 27;
+  cellW = width / 27;
+  cellH = height / 18;
   goal.x = width - cellW / 2;
   goal.y = height - cellH / 2;
 }
