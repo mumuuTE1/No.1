@@ -70,10 +70,10 @@ function draw() {
   if (state == "play" || state == "escape") {
     // プレイヤーの移動（速度2倍）
     moving = false;
-    if (keyIsDown(LEFT_ARROW)) { player.x -= 6; moving = true; }
-    if (keyIsDown(RIGHT_ARROW)) { player.x += 6; moving = true; }
-    if (keyIsDown(UP_ARROW)) { player.y -= 6; moving = true; }
-    if (keyIsDown(DOWN_ARROW)) { player.y += 6; moving = true; }
+    if (keyIsDown(LEFT_ARROW)) { player.x -= 12; moving = true; }
+    if (keyIsDown(RIGHT_ARROW)) { player.x += 12; moving = true; }
+    if (keyIsDown(UP_ARROW)) { player.y -= 12; moving = true; }
+    if (keyIsDown(DOWN_ARROW)) { player.y += 12; moving = true; }
 
     player.x = constrain(player.x, 0, width);
     player.y = constrain(player.y, 0, height);
@@ -86,7 +86,7 @@ function draw() {
       }
 
       // 警備員の速度2倍
-      let speed = state == "escape" ? 6 : 3;
+      let speed = state == "escape" ? 12 : 6;
       g.x += cos(radians(g.dir)) * speed;
       g.y += sin(radians(g.dir)) * speed;
 
