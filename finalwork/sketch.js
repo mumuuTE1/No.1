@@ -3,14 +3,14 @@ let player;
 let floor;
 let groundY;
 let state = "start";
-let jump = false;
+let prejump = false;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  resetGame();
+  resetgame();
 }
 
-function resetGame() {
+function resetgame() {
   groundY = height * 0.9;
 
   player = {
@@ -30,7 +30,7 @@ function resetGame() {
     direction: 1
   };
 
-  jump = false;
+  prejump = false;
 }
 
 function draw() {
@@ -52,49 +52,45 @@ function draw() {
   }
 
   // ジャンプ
-  let upDown = keyIsDown(UP_ARROW);
+  let jump = keyIsDown(UP_ARROW);
 
-  if (upDown && !jump && player.grounded) {
+  if (jump && !prejump && player.grounded) {
     player.vy = -height * 0.045;
     player.grounded = false;
   }
 
-  jump = upDown;
+  prejump = jump
 
   // 左右移動
-  if (keyIsDown(LEFT_ARROW))
-    {player.x -= width * 0.02}
-
-  if (keyIsDown(RIGHT_ARROW))
-    {player.x += width * 0.02}
+  if (keyIsDown(LEFT_ARROW)){player.x -= width * 0.02}
+  if (keyIsDown(RIGHT_ARROW)){player.x += width * 0.02}
 
   player.x = constrain(player.x, player.r, width-player.r);
 
   // 床の往復
-  floor.x += floor.speed * floor.direction;
+  floor.x += floor.speed * floor.direction
 
-  if (floor.x + floor.w >= width || floor.x <= 0) {
-    floor.direction *= -1;
-  }
+  if (floor.x + floor.w >= width || floor.x <= 0)
+     {floor.direction *= -1;}
 
   // 重力
-  let oldY = player.y;
+  let preY = player.y
 
-  player.vy += height * 0.0015;
-  player.y += player.vy;
-  player.grounded = false;
+  player.vy += height * 0.0015
+  player.y += player.vy
+  player.grounded = false
 
-  // 地面着地
+  // 着地判定
   if (player.y + player.r >= groundY) {
-    player.y = groundY - player.r;
-    player.vy = 0;
-    player.grounded = true;
+    player.y = groundY - player.r
+    player.vy = 0
+    player.grounded = true
   }
 
-  // 浮遊床着地
+  // 動く床の当たり判定
   if (
     player.vy > 0 &&
-    oldY + player.r <= floor.y &&
+    preY + player.r <= floor.y &&
     player.y + player.r >= floor.y &&
     player.x + player.r > floor.x &&
     player.x - player.r < floor.x + floor.w
@@ -115,16 +111,16 @@ function draw() {
   ellipse(player.x, player.y, player.r*2);
 }
 
-// クリックで開始・リトライ
+// クリックで開始・リスタート
 function mousePressed() {
   if (state !== "playing") {
-    resetGame();
-    state = "playing";
+    resetgame()
+    state = "playing"
   }
 }
 
 function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
-  resetGame();
-  state = "start";
+  resizeCanvas(windowWidth, windowHeight)
+  resetgame()
+  state = "start"
 }
