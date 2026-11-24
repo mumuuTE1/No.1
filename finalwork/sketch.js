@@ -3,7 +3,7 @@ let player;
 let floor;
 let groundY;
 let state = "start";
-let prejump = false;
+
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -28,9 +28,7 @@ function resetgame() {
     h: height * 0.025,
     speed: width * 0.025,
     direction: 1
-  };
-
-  prejump = false;
+  }
 }
 
 function draw() {
@@ -54,12 +52,10 @@ function draw() {
   // ジャンプ
   let jump = keyIsDown(UP_ARROW);
 
-  if (jump && !prejump && player.grounded) {
+  if (jump && player.grounded) {
     player.vy = -height * 0.045;
     player.grounded = false;
   }
-
-  prejump = jump
 
   // 左右移動
   if (keyIsDown(LEFT_ARROW)){player.x -= width * 0.02}
@@ -74,8 +70,6 @@ function draw() {
      {floor.direction *= -1;}
 
   // 重力
-  let originalY = player.y
-
   player.vy += height * 0.0015
   player.y += player.vy
   player.grounded = false
@@ -88,6 +82,7 @@ function draw() {
   }
 
   // 動く床の当たり判定
+  let originalY = player.y
   if (
     player.x > floor.x &&
     player.x < floor.x + floor.w &&
