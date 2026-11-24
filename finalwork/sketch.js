@@ -74,7 +74,7 @@ function draw() {
      {floor.direction *= -1;}
 
   // 重力
-  let preY = player.y
+  let originalY = player.y
 
   player.vy += height * 0.0015
   player.y += player.vy
@@ -89,14 +89,13 @@ function draw() {
 
   // 動く床の当たり判定
   if (
-    player.vy > 0 &&
-    preY + player.r <= floor.y &&
-    player.y + player.r >= floor.y &&
     player.x + player.r > floor.x &&
-    player.x - player.r < floor.x + floor.w
-  ) {
-    state = "clear";
-  }
+    player.x - player.r < floor.x + floor.w &&
+    player.vy > 0 &&
+    originalY + player.r <= floor.y &&
+    player.y + player.r >= floor.y 
+  ) 
+  { state = "clear" }
 
   // 浮く床
   fill(50, 170, 220);
