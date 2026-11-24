@@ -24,7 +24,7 @@ function resetgame() {
   floor = {
     x: width * 0.3,
     y: height * 0.35,
-    w: player.r * 2.75,
+    w: player.r * 2.5,
     h: height * 0.025,
     speed: width * 0.025,
     direction: 1
