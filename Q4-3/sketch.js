@@ -49,8 +49,19 @@ function draw(){
 
   if(frameCount % 20 === 0) { // 20フレームごとに新しい的を追加する
     // BLANK[1] 新しい的オブジェクトを作成して targets 配列に追加しよう
-  }
-
+    let r1=[]
+    let r2=[]
+    r1 = random(-5,5)
+    r2 = random(-5,5)
+    const t0 = {
+      x:width/2,
+      y:height/2, 
+      vx:r1,
+      vy:r2, 
+      size:10}
+    targets.push(t0)
+    }
+  
   // ボールに当たった or 大きくなりすぎた的を配列から削除する
   const activeTargets = []; // 生き残った的を一時的に保持する配列
   for(let i = 0; i < targets.length; i++){
@@ -60,12 +71,15 @@ function draw(){
       for(let j = 0; j < balls.length; j++){ // すべてのボールと衝突判定
         let b = balls[j];
         // BLANK[2]
+    if(!hit){
+      hit = dist(t.x,t.y,b.x,b.y) < 30}
       }
       if(!hit) activeTargets.push(t); // 衝突していなければ生き残る
     }
   }
   targets = activeTargets; // 生き残った的だけを残す
 }
+
 
 function mouseDragged(){
   const dx = mouseX - pmouseX;

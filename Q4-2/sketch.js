@@ -6,18 +6,24 @@ function setup(){
   // 配列をランダムに初期化する
   let scores = [];
   for(let i = 0; i < 10; i++){
-    scores[i] = random(20, 100); // 60以上100未満のランダムな数を代入
+    scores[i] = random(60, 100); // 60以上100未満のランダムな数を代入
   }
 
   // 横線を引く
   const n = 10;
-  for(let i = 0; i < n; i++){ line(0, height * i / n, width, height * i / n); }
+  for(let i = 0; i < n; i++){line(0, height * i / n, width, height * i / n); }
 
   // ここからが本番
   fill(0);
   const dx = width / scores.length;
   let px, py; // 線を引くために一つ前の点を覚えておく変数
-  for(let i = 0; i < scores.length; i++){
+  for(let i = 0; i < scores.length-1; i++){
     // BLANK[1]
+    px=i*dx+dx/2
+    py=height - height*scores[i]/100
+    line(px, py, px + dx, height-height*scores[i+1]/100)
+      ellipse(px, py, 8, 8)
+      ellipse(px + dx, height-height*scores[i+1]/100,8,8)
+  
   }
 }
