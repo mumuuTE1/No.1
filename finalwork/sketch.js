@@ -89,8 +89,8 @@ function draw() {
 
   // 動く床の当たり判定
   if (
-    player.x + player.r > floor.x &&
-    player.x - player.r < floor.x + floor.w &&
+    player.x > floor.x &&
+    player.x < floor.x + floor.w &&
     player.vy > 0 &&
     originalY + player.r <= floor.y &&
     player.y + player.r >= floor.y 
