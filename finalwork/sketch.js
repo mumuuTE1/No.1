@@ -66,8 +66,11 @@ function draw() {
   // 床の往復
   floor.x += floor.speed * floor.direction
 
+  floor.x = constrain(floor.x, 0, width-floor.w)
   if (floor.x + floor.w >= width || floor.x <= 0)
-     {floor.direction *= -1;}
+     {floor.direction *= -1;
+      floor.speed = random(width * 0.025, width * 0.05)
+     }
 
   // 重力
   let originalY = player.y
