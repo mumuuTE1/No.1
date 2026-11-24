@@ -24,7 +24,7 @@ function resetgame() {
   floor = {
     x: width * 0.3,
     y: height * 0.35,
-    w: player.r * 2,
+    w: player.r * 2.75,
     h: height * 0.025,
     speed: width * 0.025,
     direction: 1
@@ -70,6 +70,7 @@ function draw() {
      {floor.direction *= -1;}
 
   // 重力
+  let originalY = player.y
   player.vy += height * 0.0015
   player.y += player.vy
   player.grounded = false
@@ -82,7 +83,6 @@ function draw() {
   }
 
   // 動く床の当たり判定
-  let originalY = player.y
   if (
     player.x > floor.x &&
     player.x < floor.x + floor.w &&
